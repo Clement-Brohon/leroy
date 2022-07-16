@@ -1,4 +1,4 @@
-package adeo.leroymerlin.cdp;
+package adeo.leroymerlin.cdp.event.entity;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -21,7 +21,7 @@ public class Event {
     private String comment;
 
 
-    /** Getter Setter **//
+    /** Getter Setter **/
     public Long getId() {
         return id;
     }
