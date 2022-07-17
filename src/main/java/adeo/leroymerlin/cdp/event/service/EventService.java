@@ -1,12 +1,16 @@
 package adeo.leroymerlin.cdp.event.service;
 
 import adeo.leroymerlin.cdp.event.boundary.repository.EventRepository;
+import adeo.leroymerlin.cdp.event.entity.Band;
 import adeo.leroymerlin.cdp.event.entity.Event;
+import adeo.leroymerlin.cdp.event.entity.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Service
 public class EventService {
@@ -28,9 +32,41 @@ public class EventService {
 
     public List<Event> getFilteredEvents(String query) {
         List<Event> events = eventRepository.findAllBy();
-        // Filter the events list in pure JAVA here
+        return events.stream()
+                .filter(isMemberOfBandOfThisEventContain(query))
+                .collect(Collectors.toList());
+    }
 
-        return events;
+    private Predicate<Event> isMemberOfBandOfThisEventContain(String query) {
+        return (event) -> {
+            if (event.getBands() == null) {
+                return false;
+            }
+            else {
+                return event.getBands().stream().anyMatch(isMemberOfThisBandContain(query));
+            }
+        };
+    }
+
+    private Predicate<Band> isMemberOfThisBandContain(String query) {
+        return (band) -> {
+            if (band.getMembers() == null) {
+                return false;
+            } else {
+               return band.getMembers().stream().anyMatch(memberNameContains(query));
+            }
+        };
+    }
+
+    private Predicate<Member> memberNameContains(String query) {
+        return member -> {
+            if (member.getName() == null){
+                return false;
+            }
+            else {
+                return member.getName().contains(query);
+            }
+        };
     }
 
     public void addReview(Long idEvent, String comment, Integer nbStars){
