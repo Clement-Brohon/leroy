@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -34,7 +35,40 @@ public class EventService {
         List<Event> events = eventRepository.findAllBy();
         return events.stream()
                 .filter(isMemberOfBandOfThisEventContain(query))
+                .map(addCountOfChildItemInMembersAndBandsName())
                 .collect(Collectors.toList());
+    }
+
+    private Function<Event, Event> addCountOfChildItemInMembersAndBandsName() {
+        return (event) -> {
+            int countChildBandInEvent = 0;
+            if(event.getBands() != null){
+                countChildBandInEvent = event.getBands().size();
+                addCountOfChildItenInMemberName(event);
+            }
+
+            event.setTitle(event.getTitle() + " [" + countChildBandInEvent + "]");
+
+
+            return event;
+        };
+    }
+
+    private void addCountOfChildItenInMemberName(Event event) {
+        if(event.getBands() != null) {
+            event
+                    .getBands()
+                    .stream()
+                    .forEach(
+                            (band) -> {
+                                int countOfMemberChild = 0;
+                                if(band.getMembers() != null) {
+                                    countOfMemberChild = band.getMembers().size();
+                                }
+                                band.setName(band.getName() + " [" + countOfMemberChild + "]");
+                            });
+        }
+
     }
 
     private Predicate<Event> isMemberOfBandOfThisEventContain(String query) {
