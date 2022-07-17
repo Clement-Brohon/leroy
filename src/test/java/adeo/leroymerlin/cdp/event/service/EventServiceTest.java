@@ -1,6 +1,7 @@
 package adeo.leroymerlin.cdp.event.service;
 
 import adeo.leroymerlin.cdp.event.boundary.repository.EventRepository;
+import adeo.leroymerlin.cdp.event.entity.Band;
 import adeo.leroymerlin.cdp.event.entity.Event;
 import adeo.leroymerlin.cdp.utils.GenerateEntityForTest;
 import org.junit.jupiter.api.Test;
@@ -11,8 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.swing.text.html.Option;
-import java.util.Arrays;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -99,6 +99,62 @@ class EventServiceTest {
         //le reste n'a pas changé
         assertEquals("Woodstock", eventModifie.getValue().getTitle());
         assertEquals("1000.png", eventModifie.getValue().getImgUrl());
+    }
+
+    @Test
+    void getFilteredEventsReturnNoValueWhenDataHasNoMemberQuery() {
+        EventService eventService = new EventService(this.eventRepositoryMock);
+
+        Event woodstockEventBdd =  GenerateEntityForTest.generateWoodstockEvent();
+        when(eventRepositoryMock.findAllBy()).thenReturn(Arrays.asList(woodstockEventBdd));
+
+        List<Event> listEventsFiltreTeste = eventService.getFilteredEvents("Wa");
+
+        assertEquals(0, listEventsFiltreTeste.size());
+
+    }
+
+    @Test
+    void getFilteredEventsReturnOneValueWhenGoodQuery() {
+        EventService eventService = new EventService(this.eventRepositoryMock);
+
+        Event woodstockEventBdd =  GenerateEntityForTest.generateWoodstockEvent();
+        when(eventRepositoryMock.findAllBy()).thenReturn(Arrays.asList(woodstockEventBdd));
+
+        List<Event> listEventsFiltreTeste = eventService.getFilteredEvents("oe");
+
+        assertEquals(1, listEventsFiltreTeste.size());
+    }
+
+    @Test
+    void getFilteredEventsReturnNoValueIfNoBand() {
+        EventService eventService = new EventService(this.eventRepositoryMock);
+
+        when(eventRepositoryMock.findAllBy()).thenReturn(Arrays.asList(new Event()));
+
+        List<Event> listEventsFiltreTeste = eventService.getFilteredEvents("oe");
+
+        assertEquals(0, listEventsFiltreTeste.size());
+    }
+
+    @Test
+    void getFilteredEventsReturnNoValueIfNoMemberInBand() {
+        EventService eventService = new EventService(this.eventRepositoryMock);
+
+        //Generation d'un evènement avec une bande sans aucun membre
+        Event eventTest = new Event();
+        Set<Band> listBandWithoutMember = new HashSet<>();
+        listBandWithoutMember.add(new Band());
+        eventTest.setBands(listBandWithoutMember);
+
+        //mock
+        when(eventRepositoryMock.findAllBy()).thenReturn(Arrays.asList(new Event()));
+
+        //test
+        List<Event> listEventsFiltreTeste = eventService.getFilteredEvents("oe");
+
+        //verification
+        assertEquals(0, listEventsFiltreTeste.size());
     }
 
 
