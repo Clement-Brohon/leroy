@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EventService {
@@ -30,5 +31,18 @@ public class EventService {
         // Filter the events list in pure JAVA here
 
         return events;
+    }
+
+    public void addReview(Long idEvent, String comment, Integer nbStars){
+        Optional<Event> eventFromBdd = eventRepository.findById(idEvent);
+
+        eventFromBdd.ifPresentOrElse(
+            (event) -> {
+                event.setComment(comment);
+                event.setNbStars(nbStars);
+                eventRepository.save(event);
+            },
+            () -> { throw new RuntimeException("Event non trouvé"); }
+        );
     }
 }
