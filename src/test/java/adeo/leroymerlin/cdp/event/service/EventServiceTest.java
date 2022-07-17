@@ -148,7 +148,7 @@ class EventServiceTest {
         eventTest.setBands(listBandWithoutMember);
 
         //mock
-        when(eventRepositoryMock.findAllBy()).thenReturn(Arrays.asList(new Event()));
+        when(eventRepositoryMock.findAllBy()).thenReturn(Arrays.asList(eventTest));
 
         //test
         List<Event> listEventsFiltreTeste = eventService.getFilteredEvents("oe");
@@ -157,5 +157,23 @@ class EventServiceTest {
         assertEquals(0, listEventsFiltreTeste.size());
     }
 
+    @Test
+    void getFilteredEventsDisplayNumberOfBandAndMember() {
+        EventService eventService = new EventService(this.eventRepositoryMock);
+        
+        Event woodstock = GenerateEntityForTest.generateWoodstockEvent();
+
+        //mock
+        when(eventRepositoryMock.findAllBy()).thenReturn(Arrays.asList(woodstock));
+
+        //test
+        List<Event> listEventsFiltreTeste = eventService.getFilteredEvents("oe");
+
+        //verification
+        assertEquals(1, listEventsFiltreTeste.size());
+        assertEquals("Woodstock [1]", listEventsFiltreTeste.get(0).getTitle());
+        assertEquals(1, listEventsFiltreTeste.get(0).getBands().size());
+        assertEquals("Green Day [1]", listEventsFiltreTeste.get(0).getBands().iterator().next().getName());
+    }
 
 }
